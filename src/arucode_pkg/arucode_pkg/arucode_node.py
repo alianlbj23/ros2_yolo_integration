@@ -19,8 +19,8 @@ class ArucoDetector(Node):
             Image, "/camera/depth/image_raw", self.depth_callback, 10
         )
 
-        # 發佈：ID=0 的深度（公尺）
-        self.depth_pub = self.create_publisher(Float32, "/aruco/id0/depth_m", 10)
+        # 發佈：ID=100 的深度（公尺）
+        self.depth_pub = self.create_publisher(Float32, "/aruco/id100/depth_m", 10)
 
         # ---- ArUco 相容初始化（新版/舊版都可） ----
         # 字典
@@ -47,6 +47,9 @@ class ArucoDetector(Node):
         self._depth_h = None
         self._depth_w = None
 
+        # 目標 ID
+        self.target_id = 100
+
     # --- 深度影像回呼：只做轉換與快取 ---
     def depth_callback(self, msg: Image):
         try:
@@ -70,7 +73,7 @@ class ArucoDetector(Node):
             self._depth_img = None
             self.get_logger().error(f"[depth] 解析失敗: {e}")
 
-    # --- 彩色影像回呼：ArUco 偵測並在遇到 ID=0 時輸出 + 發佈深度 ---
+    # --- 彩色影像回呼：ArUco 偵測並在遇到 ID=100 時輸出 + 發佈深度 ---
     def image_callback(self, msg: CompressedImage):
         # 轉 OpenCV BGR 影像
         try:
@@ -99,12 +102,12 @@ class ArucoDetector(Node):
             return
 
         ids_list = ids.flatten().tolist()
-        if 0 not in ids_list:
+        if self.target_id not in ids_list:
             return
 
-        # 找到 ID=0 的 corners，取中心深度並 publish
+        # 找到 ID=100 的 corners，取中心深度並 publish
         for i, marker_id in enumerate(ids_list):
-            if marker_id != 0:
+            if marker_id != self.target_id:
                 continue
             c = corners[i][0]  # shape: (4, 2) -> (x,y)
             u = int(round(c[:, 0].mean()))
@@ -112,14 +115,16 @@ class ArucoDetector(Node):
 
             depth_m = self._get_depth_at_pixel(u, v, cv_image.shape[1], cv_image.shape[0])
             if depth_m is None:
-                self.get_logger().warn(f"[aruco 0] 深度不可用或座標越界 (u={u}, v={v})")
+                self.get_logger().warn(f"[aruco {self.target_id}] 深度不可用或座標越界 (u={u}, v={v})")
             else:
                 # 發佈 Float32（m）
                 msg_depth = Float32()
                 msg_depth.data = depth_m
                 self.depth_pub.publish(msg_depth)
 
-                self.get_logger().info(f"[aruco 0] 深度: {depth_m:.3f} m at (u={u}, v={v})  -> 已發佈 /aruco/id0/depth_m")
+                self.get_logger().info(
+                    f"[aruco {self.target_id}] 深度: {depth_m:.3f} m at (u={u}, v={v})  -> 已發佈 /aruco/id100/depth_m"
+                )
 
     def _get_depth_at_pixel(self, u_rgb: int, v_rgb: int, rgb_w: int, rgb_h: int):
         """

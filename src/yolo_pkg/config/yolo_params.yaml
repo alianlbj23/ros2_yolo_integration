@@ -1,6 +1,7 @@
 yolo:
-  conf: 0.6
-  obb_model: "soccer.pt"
+  conf: 0.8
+  # obb_model: "balldetect-11s.pt"
+  obb_model: "ball.pt"
   seg_model: "segmentation_hw.pt"
 
 image:
