@@ -96,16 +96,7 @@ class YoloDepthExtractor:
                         # Calculate the mean of valid depths
                         depth_value = np.mean(valid_depths)
                         found_valid_depth = True
-                        # print(f"Found valid depth for {label} at radius {current_radius}: {depth_value:.3f}m") # Optional debug
                         break  # Exit loop once valid depth is found
-
-                # if not found_valid_depth: # Optional debug
-                # print(f"No valid depth found for {label} after {max_iterations} iterations.")
-
-            # --- Append Result ---
-            # depth_value will be the original center value (valid or invalid)
-            # or the mean from the first successful window expansion.
-            # If expansion failed, it remains the original invalid value.
             objects_with_depth.append(
                 {
                     "label": label,

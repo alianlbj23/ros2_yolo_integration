@@ -63,7 +63,7 @@ def main():
                 boundingbox_visualizer.draw_bounding_boxes(
                     draw_crosshair=True,
                     screenshot=False,
-                    segmentation_status=True,
+                    segmentation_status=False,
                     bounding_status=True,
                     offsets_3d_json=offsets_3d,
                 )
@@ -101,8 +101,8 @@ def main():
                 print("Invalid input.")
 
             # Example action for yolo_depth_extractor (can be removed if not needed)
-            depth_data = yolo_depth_extractor.get_yolo_object_depth()
-            print(f"Object Depth: {depth_data}")
+            # depth_data = yolo_depth_extractor.get_yolo_object_depth()
+            # print(f"Object Depth: {depth_data}")
 
     except KeyboardInterrupt:
         print("Shutting down gracefully...")
